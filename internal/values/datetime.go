@@ -107,7 +107,7 @@ func (v *valueDatetime) addPropFormat(value any) error {
 	case "iso8601":
 		v.toValue = iso8601.ParseString
 		v.formatValue = func(input time.Time) string {
-			// RFC3339Nano is allowed ISO8601 format
+			// RFC3339Nano is a valid ISO 8601 profile.
 			return input.Format(time.RFC3339Nano)
 		}
 
@@ -125,7 +125,7 @@ func (v *valueDatetime) addPropFormat(value any) error {
 			return strconv.FormatInt(input.Unix(), 10)
 		}
 
-	// time in MILLI-seconds from epoch
+	// time in milliseconds from epoch
 	case "unix-ms":
 		v.toValue = func(input string) (time.Time, error) {
 			val, err := strconv.ParseInt(input, 10, 64)

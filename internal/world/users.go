@@ -97,9 +97,8 @@ func (u *Users) GetGroup(name string) (uint32, error) {
 func (u *Users) parseID(value string) uint32 {
 	val, err := strconv.ParseUint(value, 10, 32)
 	if err != nil {
-		// we could return error here but actually I do not know how to work
-		// with OSes where GID/UID are not uint32. It means shebang runs on
-		// some unsupported system. Let's just deliberately panic here.
+		// Supported platforms use numeric uint32 UIDs/GIDs; anything else is
+		// an unsupported system, so fail loudly instead of guessing.
 		panic(err)
 	}
 

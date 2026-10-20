@@ -141,8 +141,7 @@ func (g *Git) FilterCommits(prefix string) ([]string, error) {
 
 	prefix = strings.ToLower(prefix)
 
-	// fast path. if we are given a full commit, we can skip
-	// an expensive scanning
+	// A full hash needs a direct lookup, not a prefix scan.
 	if len(prefix) == hash.HexSize {
 		if g.containsCommit(prefix) {
 			return []string{prefix}, nil
@@ -410,7 +409,6 @@ func (g *Git) validHash(prefix string) error {
 	}
 
 	for _, char := range prefix {
-		// for example, abcdez
 		if !unicode.Is(unicode.ASCII_Hex_Digit, char) {
 			return fmt.Errorf("%w: %q", ErrGitHashHex, prefix)
 		}
@@ -426,13 +424,11 @@ func (g *Git) collectMatchingHashes(prefix string) ([]string, error) {
 
 	prefix = strings.ToLower(prefix)
 
-	// this looks a bit ridiculous but this is what happens:
-	//  - git usually uses 7 characters for abbreviated commit hashes
-	//    https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection#Short-SHA-1
-	//  - 7 % 2 == 1, so it means it already broken encoding
-	//  - so, we do [:L/2*2]. 7/2*2 = (7/2) * 2 = 3 * 2 = 6
-	//    this is just an alignment. But before, we want to check
-	//  - filter out excess hashes
+	// hex.DecodeString needs an even length, but abbreviated hashes are often
+	// odd (git defaults to 7 characters:
+	// https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection#Short-SHA-1).
+	// Truncate to whole bytes for the storage lookup, then filter the broader
+	// result by the full string prefix below.
 	pfx, err := hex.DecodeString(prefix[:len(prefix)/2*2])
 	if err != nil {
 		return nil, fmt.Errorf("invalid hex: %w", err)

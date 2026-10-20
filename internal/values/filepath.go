@@ -153,15 +153,14 @@ func (v *valueFilepath) genCompletionsCwd(input string) ([]string, cobra.ShellCo
 			continue
 		}
 
-		// we use '+' here instead to filepath.Join to preserve leading dot.
-		// for example, if user has typed './report.json', then join makes
-		// 'report.json' because of filepath.Clean. In all cases except of
-		// shell completion this is fine, but we want to complete.
+		// Concatenate instead of filepath.Join: Join cleans the path and drops
+		// a leading "./", so "./rep" would no longer prefix-match the candidate
+		// the shell is completing.
 		fullPath := directory + name
 
 		isDir := entry.IsDir()
-		// DirEntry uses Lstat, so symlink here is not followed. We want to
-		// follow, so let's resolve it on our own
+		// DirEntry reports Lstat types; follow symlinks so links to
+		// directories are offered for navigation.
 		if !isDir && entry.Type()&os.ModeSymlink != 0 {
 			if info, err := world.World.Files.Stat(fullPath); err == nil {
 				isDir = info.IsDir()

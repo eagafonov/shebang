@@ -168,7 +168,7 @@ func (v *valueIP) genCompletions(input string) ([]string, cobra.ShellCompDirecti
 	candidates := make([]cobra.Completion, 0, len(addresses))
 
 	for _, address := range addresses {
-		// address could be empty here for /0 subnets
+		// Addresses are empty for /0 subnets.
 		if address != "" && strings.HasPrefix(address, input) {
 			candidates = append(candidates, address)
 		}
@@ -187,10 +187,8 @@ func (v *valueIP) getPrefixCompletions(prefix netip.Prefix) []string {
 	lastRaw := first.AsSlice()
 	mask := net.CIDRMask(prefix.Bits(), first.BitLen())
 
-	// mask has 1s in the network porting and 0s in the host portion:
-	// 255.255.255.0 for /24. By inverting this mask we are getting
-	// 0.0.0.255. It sets all host bits to 1, keeping all network part intact.
-	//  This gives the very last IP address in the subnet.
+	// Setting every host bit (the inverted mask, e.g. 0.0.0.255 for /24)
+	// yields the last address in the subnet.
 	for i := range lastRaw {
 		lastRaw[i] |= ^mask[i]
 	}

@@ -54,7 +54,7 @@ func (b *baseValue[T]) Complete(value string) ([]cobra.Completion, cobra.ShellCo
 
 	values, directive := b.toComplete(value)
 
-	// shell may change the order though, this is fine
+	// Sort for deterministic output; shells may still reorder candidates.
 	slices.Sort(values)
 	values = slices.Compact(values)
 
